@@ -1,0 +1,38 @@
+name: Fully Automated Shorts System
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install system tools
+        run: |
+          sudo apt update
+          sudo apt install ffmpeg -y
+          pip install -r requirements.txt
+
+      - name: Install Piper
+        run: |
+          wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_linux_x86_64.tar.gz
+          tar -xvf piper_linux_x86_64.tar.gz
+          sudo mv piper /usr/local/bin/
+
+      - name: Install Whisper
+        run: |
+          git clone https://github.com/ggerganov/whisper.cpp
+          cd whisper.cpp && make
+
+      - name: Run full automation
+        run: |
+          python trends.py
+          python script.py
+          python voice.py
+          python captions.py
+          python video.py
+          python metadata.py
