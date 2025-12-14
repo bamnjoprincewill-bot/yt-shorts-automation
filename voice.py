@@ -1,3 +1,4 @@
+
 import os
 
 with open("scripts.txt") as f:
