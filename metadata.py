@@ -35,3 +35,4 @@ with open("metadata.txt", "w") as f:
     for t, d in zip(titles, descriptions):
         f.write(t + "\n")
         f.write(d + "\n---\n")
+
