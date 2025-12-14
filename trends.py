@@ -1,3 +1,4 @@
+
 from pytrends.request import TrendReq
 
 pytrends = TrendReq()
