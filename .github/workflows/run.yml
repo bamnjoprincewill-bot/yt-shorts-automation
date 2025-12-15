@@ -1,38 +1,46 @@
 name: Fully Automated Shorts System
 
+# Runs every 8 hours → 3 times/day
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 */8 * * *"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repo
       - uses: actions/checkout@v3
 
-      - name: Install system tools
+      # 2️⃣ Install Python and FFmpeg
+      - name: Setup system
         run: |
           sudo apt update
-          sudo apt install ffmpeg -y
+          sudo apt install ffmpeg wget git -y
+          python3 -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 3️⃣ Install Piper for voice
       - name: Install Piper
         run: |
           wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_linux_x86_64.tar.gz
           tar -xvf piper_linux_x86_64.tar.gz
           sudo mv piper /usr/local/bin/
 
+      # 4️⃣ Install Whisper for captions
       - name: Install Whisper
         run: |
           git clone https://github.com/ggerganov/whisper.cpp
           cd whisper.cpp && make
 
-      - name: Run full automation
+      # 5️⃣ Run full automation
+      - name: Run Full Automation
         run: |
-          python trends.py
-          python script.py
-          python voice.py
-          python captions.py
-          python video.py
-          python metadata.py
+          python3 bg_image.py
+          python3 trends.py
+          python3 script.py
+          python3 voice.py
+          python3 captions.py
+          python3 video.py
+          python3 metadata.py
