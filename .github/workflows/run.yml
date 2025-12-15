@@ -25,9 +25,8 @@ jobs:
       # 3️⃣ Install Piper for voice
       - name: Install Piper
         run: |
-          wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_linux_x86_64.tar.gz
-          tar -xvf piper_linux_x86_64.tar.gz
-          sudo mv piper /usr/local/bin/
+          https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
+
 
       # 4️⃣ Install Whisper for captions
       - name: Install Whisper
