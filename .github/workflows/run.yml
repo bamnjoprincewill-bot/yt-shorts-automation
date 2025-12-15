@@ -1,10 +1,9 @@
 name: Fully Automated Shorts System
 
 on:
-  workflow_dispatch:  # <-- This adds the manual "Run workflow" button
+  workflow_dispatch:  # Manual run button
   schedule:
-    - cron: "0 */8 * * *"  # <-- still runs automatically every 8 hours
-
+    - cron: "0 */8 * * *"  # Run every 8 hours
 
 jobs:
   build:
@@ -14,7 +13,7 @@ jobs:
       # 1️⃣ Checkout the repo
       - uses: actions/checkout@v3
 
-      # 2️⃣ Install Python and FFmpeg
+      # 2️⃣ Setup system: Python, FFmpeg, pip
       - name: Setup system
         run: |
           sudo apt update
@@ -24,16 +23,12 @@ jobs:
 
       # 3️⃣ Install Piper for voice
       - name: Install Piper
-  run: |
-    sudo apt update
-    sudo apt install wget tar -y
-    wget https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz -O piper.tar.gz
-    tar -xvf piper.tar.gz
-    sudo mv piper /usr/local/bin/
-
-        
-          
-
+        run: |
+          sudo apt update
+          sudo apt install wget tar -y
+          wget https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz -O piper.tar.gz
+          tar -xvf piper.tar.gz
+          sudo mv piper /usr/local/bin/
 
       # 4️⃣ Install Whisper for captions
       - name: Install Whisper
@@ -51,3 +46,4 @@ jobs:
           python3 captions.py
           python3 video.py
           python3 metadata.py
+
