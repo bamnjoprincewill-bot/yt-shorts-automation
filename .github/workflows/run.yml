@@ -1,9 +1,10 @@
 name: Fully Automated Shorts System
 
-# Runs every 8 hours → 3 times/day
 on:
+  workflow_dispatch:  # <-- This adds the manual "Run workflow" button
   schedule:
-    - cron: "0 */8 * * *"
+    - cron: "0 */8 * * *"  # <-- still runs automatically every 8 hours
+
 
 jobs:
   build:
