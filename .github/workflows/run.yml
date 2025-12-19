@@ -13,12 +13,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup system
+            - name: Setup system
         run: |
           sudo apt update
           sudo apt install ffmpeg git -y
           python3 -m pip install --upgrade pip
-          pip install moviepy imageio imageio-ffmpeg numpy pillow requests pytrends
+          pip install moviepy imageio imageio-ffmpeg numpy pillow requests pytrends gTTS
+
 
       - name: Run automation
         run: |
