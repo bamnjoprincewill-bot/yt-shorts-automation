@@ -3,7 +3,7 @@ from gtts import gTTS
 
 os.makedirs("audio", exist_ok=True)
 
-for i in range(5):
+for i in range(30):
     with open(f"scripts/script_{i}.txt") as f:
         text = f.read()
 
