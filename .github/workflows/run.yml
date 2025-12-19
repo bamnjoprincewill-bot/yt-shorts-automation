@@ -3,7 +3,9 @@ name: Fully Automated Shorts System
 on:
   workflow_dispatch:  # Manual run button
   schedule:
-    - cron: "0 */8 * * *"  # Run every 8 hours
+    schedule:
+  - cron: "0 */4 * * *"
+
 
 jobs:
   build:
