@@ -1,12 +1,22 @@
 import os
-import bg_image  # this ensures bg.jpg is created automatically
+from moviepy.editor import *
 
-for i in range(3):
-    os.system(
-        f'''
-ffmpeg -loop 1 -i bg.jpg -i voice_{i}.wav \
--vf "scale=1080:1920,subtitles=voice_{i}.srt:force_style='Fontsize=48,PrimaryColour=&H00FFFF&,OutlineColour=&H000000&,BorderStyle=3'" \
--c:v libx264 -c:a aac -shortest short_{i}.mp4
-'''
+os.makedirs("output", exist_ok=True)
+
+for i in range(5):
+    audio = AudioFileClip(f"audio/voice_{i}.mp3")
+
+    bg = ColorClip(
+        size=(1080,1920),
+        color=(0,0,0),
+        duration=audio.duration
     )
 
+    video = bg.set_audio(audio)
+
+    video.write_videofile(
+        f"output/short_{i}.mp4",
+        fps=24,
+        codec="libx264",
+        audio_codec="aac"
+    )
