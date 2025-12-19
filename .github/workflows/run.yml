@@ -1,7 +1,7 @@
 name: YouTube Shorts Full Automation
 
 on:
-  workflow_dispatch:   # ✅ Manual run only, guarantees Run button
+  workflow_dispatch:   # ✅ Manual run only
 
 jobs:
   build:
@@ -24,8 +24,8 @@ jobs:
           sudo apt update
           sudo apt install ffmpeg python3-pip -y
 
-      # 4️⃣ Install Python packages
-      - name: Install Python dependencies
+      # 4️⃣ Install Python dependencies
+      - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy pillow requests pytrends gTTS
@@ -37,7 +37,7 @@ jobs:
           for i in {1..90}; do
             echo "=== Generating video $i ==="
 
-            # Trending topic
+            # 🔹 Trending topic
             python - <<EOF
 from pytrends.request import TrendReq
 import os
@@ -50,51 +50,71 @@ with open(f"output/scripts/script_{i:02d}.txt", "w") as f:
     f.write(keyword)
 EOF
 
-            # Script (hook, body, close)
+            # 🔹 Generate short script
             python - <<EOF
 import random, os
 i = $i
-with open(f"output/scripts/script_{i:02d}.txt","r") as f: topic=f.read().strip()
-hooks = [f"Did you know about {topic}?","This {topic} will blow your mind!","Stop scrolling! You need to see this {topic}.","Quick tip about {topic} you can't miss!"]
-bodies = [f"{topic} can save you so much time.","Here’s a quick hack using {topic}.","Use {topic} to level up your workflow.","This simple {topic} trick boosts productivity."]
-closes = ["Try it now!","Don't forget to share!","Hit follow for more!","Implement this today!"]
+with open(f"output/scripts/script_{i:02d}.txt","r") as f:
+    topic = f.read().strip()
+hooks = [
+    f"Did you know about {topic}?",
+    f"This {topic} will blow your mind!",
+    f"Stop scrolling! You need to see this {topic}.",
+    f"Quick tip about {topic} you can't miss!"
+]
+bodies = [
+    f"{topic} can save you so much time.",
+    f"Here’s a quick hack using {topic}.",
+    f"Use {topic} to level up your workflow.",
+    f"This simple {topic} trick boosts productivity."
+]
+closes = [
+    "Try it now!",
+    "Don't forget to share!",
+    "Hit follow for more!",
+    "Implement this today!"
+]
 script = f"{random.choice(hooks)}\n{random.choice(bodies)}\n{random.choice(closes)}"
-with open(f"output/scripts/processed_script_{i:02d}.txt","w") as f: f.write(script)
+with open(f"output/scripts/processed_script_{i:02d}.txt","w") as f:
+    f.write(script)
 EOF
 
-            # Voiceover
+            # 🔹 Generate voiceover
             python - <<EOF
 from gtts import gTTS
 import os
 i = $i
-with open(f"output/scripts/processed_script_{i:02d}.txt","r") as f: text=f.read()
+with open(f"output/scripts/processed_script_{i:02d}.txt","r") as f:
+    text = f.read()
 os.makedirs("output/audio", exist_ok=True)
 tts = gTTS(text=text, lang='en')
 tts.save(f"output/audio/audio_{i:02d}.mp3")
 EOF
 
-            # Background image
+            # 🔹 Generate background image
             python - <<EOF
 from PIL import Image, ImageDraw, ImageFont
 import os
 i = $i
 os.makedirs("output/images", exist_ok=True)
-img = Image.new("RGB",(1080,1920),(30,30,30))
+img = Image.new("RGB", (1080, 1920), (30, 30, 30))
 draw = ImageDraw.Draw(img)
-try: font=ImageFont.truetype("arial.ttf",80)
-except: font=ImageFont.load_default()
-text=f"Video {i:02d} - AI Shorts"
-w,h=draw.textsize(text,font=font)
-draw.text(((1080-w)/2,(1920-h)/2),text,font=font,fill=(255,255,255))
+try:
+    font = ImageFont.truetype("arial.ttf", 80)
+except:
+    font = ImageFont.load_default()
+text = f"Video {i:02d} - AI Shorts"
+w, h = draw.textsize(text, font=font)
+draw.text(((1080-w)/2, (1920-h)/2), text, font=font, fill=(255,255,255))
 img.save(f"output/images/image_{i:02d}.png")
 EOF
 
-            # Combine image + audio to video
+            # 🔹 Combine image + audio to video
             ffmpeg -loop 1 -i output/images/image_${i:02d}.png -i output/audio/audio_${i:02d}.mp3 \
             -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -y output/video/video_${i:02d}.mp4
           done
 
-      # 6️⃣ Upload all videos
+      # 6️⃣ Upload all videos as one artifact
       - name: Upload all videos
         uses: actions/upload-artifact@v4
         with:
