@@ -1,120 +1,34 @@
-name: YouTube Shorts Full Automation
+name: YouTube Shorts Automation
 
 on:
-  workflow_dispatch:   # ✅ Manual run only
+  workflow_dispatch:  # ✅ Manual run only
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Python
       - name: Setup Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: 3.12
 
-      # 3️⃣ Install system dependencies
       - name: Install system packages
         run: |
           sudo apt update
           sudo apt install ffmpeg python3-pip -y
 
-      # 4️⃣ Install Python dependencies
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy pillow requests pytrends gTTS
 
-      # 5️⃣ Generate 90 fully automated videos
-      - name: Generate 90 videos
-        run: |
-          mkdir -p output/audio output/images output/video output/scripts
-          for i in {1..90}; do
-            echo "=== Generating video $i ==="
+      - name: Run full automation
+        run: python generate_videos.py
 
-            # 🔹 Trending topic
-            python - <<EOF
-from pytrends.request import TrendReq
-import os
-i = $i
-pytrends = TrendReq(hl='en-US', tz=0)
-topics = ["AI tools","Tech hacks","Smart websites","Automation","AI apps"]
-keyword = topics[i % len(topics)]
-os.makedirs("output/scripts", exist_ok=True)
-with open(f"output/scripts/script_{i:02d}.txt", "w") as f:
-    f.write(keyword)
-EOF
-
-            # 🔹 Generate short script
-            python - <<EOF
-import random, os
-i = $i
-with open(f"output/scripts/script_{i:02d}.txt","r") as f:
-    topic = f.read().strip()
-hooks = [
-    f"Did you know about {topic}?",
-    f"This {topic} will blow your mind!",
-    f"Stop scrolling! You need to see this {topic}.",
-    f"Quick tip about {topic} you can't miss!"
-]
-bodies = [
-    f"{topic} can save you so much time.",
-    f"Here’s a quick hack using {topic}.",
-    f"Use {topic} to level up your workflow.",
-    f"This simple {topic} trick boosts productivity."
-]
-closes = [
-    "Try it now!",
-    "Don't forget to share!",
-    "Hit follow for more!",
-    "Implement this today!"
-]
-script = f"{random.choice(hooks)}\n{random.choice(bodies)}\n{random.choice(closes)}"
-with open(f"output/scripts/processed_script_{i:02d}.txt","w") as f:
-    f.write(script)
-EOF
-
-            # 🔹 Generate voiceover
-            python - <<EOF
-from gtts import gTTS
-import os
-i = $i
-with open(f"output/scripts/processed_script_{i:02d}.txt","r") as f:
-    text = f.read()
-os.makedirs("output/audio", exist_ok=True)
-tts = gTTS(text=text, lang='en')
-tts.save(f"output/audio/audio_{i:02d}.mp3")
-EOF
-
-            # 🔹 Generate background image
-            python - <<EOF
-from PIL import Image, ImageDraw, ImageFont
-import os
-i = $i
-os.makedirs("output/images", exist_ok=True)
-img = Image.new("RGB", (1080, 1920), (30, 30, 30))
-draw = ImageDraw.Draw(img)
-try:
-    font = ImageFont.truetype("arial.ttf", 80)
-except:
-    font = ImageFont.load_default()
-text = f"Video {i:02d} - AI Shorts"
-w, h = draw.textsize(text, font=font)
-draw.text(((1080-w)/2, (1920-h)/2), text, font=font, fill=(255,255,255))
-img.save(f"output/images/image_{i:02d}.png")
-EOF
-
-            # 🔹 Combine image + audio to video
-            ffmpeg -loop 1 -i output/images/image_${i:02d}.png -i output/audio/audio_${i:02d}.mp3 \
-            -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -y output/video/video_${i:02d}.mp4
-          done
-
-      # 6️⃣ Upload all videos as one artifact
       - name: Upload all videos
         uses: actions/upload-artifact@v4
         with:
