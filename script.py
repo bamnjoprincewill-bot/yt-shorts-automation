@@ -1,16 +1,11 @@
+import os
 
-def script(topic):
-    return f"""
-Stop scrolling.
-This AI tool is exploding right now.
-{topic} helps people save hours every day.
-Most people don’t know this exists yet.
-Link is in the description.
-"""
+os.makedirs("scripts", exist_ok=True)
 
 with open("topics.txt") as f:
     topics = f.readlines()
 
-with open("scripts.txt", "w") as f:
-    for t in topics:
-        f.write(script(t.strip()) + "\n---\n")
+for i in range(5):
+    text = f"{topics[i % len(topics)].strip()}\nStay hard. Keep going."
+    with open(f"scripts/script_{i}.txt", "w") as s:
+        s.write(text)
