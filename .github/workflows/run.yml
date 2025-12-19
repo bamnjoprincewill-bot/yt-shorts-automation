@@ -1,7 +1,7 @@
-name: YouTube Shorts Automation
+name: YouTube Shorts Full Automation
 
 on:
-  workflow_dispatch:   # Manual Run button
+  workflow_dispatch:   # Manual run button
   schedule:
     - cron: "0 0 * * *"  # Optional daily run
 
@@ -34,14 +34,66 @@ jobs:
       # 5️⃣ Generate all 90 videos
       - name: Generate 90 videos
         run: |
+          mkdir -p output/images output/audio output/scripts output/video
           for i in {1..90}; do
-            echo "=== Generating video $i ==="
-            python trends.py --video-number $i
-            python script.py --video-number $i
-            python voice.py --video-number $i
-            python bg_image.py --video-number $i
-            python video_ffmpeg.py --video-number $i
-            python metadata.py --video-number $i
+            echo "=== Video $i ==="
+
+            # 5a. Get trending topic
+            python - <<EOF
+import argparse, os, random
+from pytrends.request import TrendReq
+pytrends = TrendReq(hl='en-US', tz=0)
+kw_list = ["AI tools", "Tech hacks", "Smart websites", "Automation", "AI apps"]
+keyword = kw_list[$i % len(kw_list)]
+os.makedirs("output/scripts", exist_ok=True)
+with open(f"output/scripts/script_{i:02d}.txt", "w") as f:
+    f.write(f"{keyword}")
+EOF
+
+            # 5b. Generate short script (hook, body, close)
+            python - <<EOF
+import random, os
+i = $i
+script_file = f"output/scripts/script_{i:02d}.txt"
+with open(script_file, "r") as f: topic = f.read().strip()
+hooks = [f"Did you know about {topic}?", f"This {topic} will blow your mind!", f"Stop scrolling! You need to see this {topic}.", f"Quick tip about {topic} you can't miss!"]
+bodies = [f"{topic} can save you so much time.", f"Here’s a quick hack using {topic}.", f"Use {topic} to level up your workflow.", f"This simple {topic} trick boosts productivity."]
+closes = ["Try it now!", "Don't forget to share!", "Hit follow for more!", "Implement this today!"]
+final_script = f"{random.choice(hooks)}\n{random.choice(bodies)}\n{random.choice(closes)}"
+os.makedirs("output/scripts", exist_ok=True)
+with open(f"output/scripts/processed_script_{i:02d}.txt", "w") as f: f.write(final_script)
+EOF
+
+            # 5c. Generate voiceover
+            python - <<EOF
+from gtts import gTTS
+import os
+i = $i
+with open(f"output/scripts/processed_script_{i:02d}.txt", "r") as f: text = f.read()
+os.makedirs("output/audio", exist_ok=True)
+tts = gTTS(text=text, lang='en')
+tts.save(f"output/audio/audio_{i:02d}.mp3")
+EOF
+
+            # 5d. Generate background image
+            python - <<EOF
+from PIL import Image, ImageDraw, ImageFont
+import os
+i = $i
+os.makedirs("output/images", exist_ok=True)
+img = Image.new("RGB", (1080,1920), color=(30,30,30))
+draw = ImageDraw.Draw(img)
+try: font = ImageFont.truetype("arial.ttf", 80)
+except: font = ImageFont.load_default()
+text = f"Video {i:02d} - AI Shorts"
+w,h = draw.textsize(text,font=font)
+draw.text(((1080-w)/2,(1920-h)/2), text, font=font, fill=(255,255,255))
+img.save(f"output/images/image_{i:02d}.png")
+EOF
+
+            # 5e. Combine image + audio to video
+            ffmpeg -loop 1 -i output/images/image_${i}_%02d.png -i output/audio/audio_${i}_%02d.mp3 \
+            -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -y output/video/video_${i}_%02d.mp4
           done
 
       # 6️⃣ Upload all videos as one artifact
@@ -49,4 +101,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: shorts
-          path: output/
+          path: output/video/
