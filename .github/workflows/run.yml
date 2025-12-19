@@ -8,29 +8,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Python
       - name: Setup Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: 3.12
 
+      # 3️⃣ Install system dependencies
       - name: Install system packages
         run: |
           sudo apt update
-          sudo apt install ffmpeg python3-pip -y
+          sudo apt install ffmpeg python3-pip zip -y
 
+      # 4️⃣ Install Python packages
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy pillow requests pytrends gTTS
 
-      - name: Run full automation
+      # 5️⃣ Run full automation
+      - name: Generate all videos
         run: python generate_videos.py
 
+      # 6️⃣ Package all videos into a single ZIP
+      - name: Zip all videos
+        run: |
+          cd output/video
+          zip -r ../all_videos.zip ./*.mp4
+          cd ../../
+
+      # 7️⃣ Upload the ZIP as an artifact
       - name: Upload all videos
         uses: actions/upload-artifact@v4
         with:
           name: shorts
-          path: output/video/
+          path: output/all_videos.zip
