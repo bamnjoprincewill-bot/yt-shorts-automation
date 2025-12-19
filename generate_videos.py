@@ -53,8 +53,16 @@ for i in range(1, 91):
         font = ImageFont.truetype("arial.ttf", 80)
     except:
         font = ImageFont.load_default()
-    w,h = draw.textsize(f"Video {i:02d} - AI Shorts", font=font)
-    draw.text(((1080-w)/2,(1920-h)/2), f"Video {i:02d} - AI Shorts", font=font, fill=(255,255,255))
+    text = f"Video {i:02d} - AI Shorts"
+
+    # ✅ Fix for Pillow textsize
+    if hasattr(draw, "textbbox"):
+        bbox = draw.textbbox((0,0), text, font=font)
+        w, h = bbox[2]-bbox[0], bbox[3]-bbox[1]
+    else:
+        w, h = draw.textsize(text, font=font)
+
+    draw.text(((1080-w)/2,(1920-h)/2), text, font=font, fill=(255,255,255))
     img.save(f"output/images/image_{i:02d}.png")
 
     # 5️⃣ Combine into video
