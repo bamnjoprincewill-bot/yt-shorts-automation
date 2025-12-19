@@ -1,11 +1,11 @@
-
 import os
+from gtts import gTTS
 
-with open("scripts.txt") as f:
-    scripts = f.read().split("---")
+os.makedirs("audio", exist_ok=True)
 
-for i, s in enumerate(scripts):
-    s = s.replace("\n", " ")
-    os.system(
-        f'echo "{s}" | piper --model en_US-lessac-medium.onnx --output_file voice_{i}.wav'
-    )
+for i in range(5):
+    with open(f"scripts/script_{i}.txt") as f:
+        text = f.read()
+
+    tts = gTTS(text)
+    tts.save(f"audio/voice_{i}.mp3")
