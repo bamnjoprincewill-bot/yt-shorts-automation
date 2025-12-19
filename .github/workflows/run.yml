@@ -1,9 +1,8 @@
 name: YouTube Shorts Full Automation
 
+# Manual run only
 on:
-  workflow_dispatch:   # Manual run
-  schedule:
-    - cron: "0 0 * * *"  # Optional daily run
+  workflow_dispatch:   # This ensures the Run workflow button always appears
 
 jobs:
   build:
@@ -38,7 +37,7 @@ jobs:
           for i in {1..90}; do
             echo "=== Generating video $i ==="
 
-            # 🔹 Generate trending topic
+            # Generate trending topic
             python - <<EOF
 from pytrends.request import TrendReq
 import os
@@ -51,7 +50,7 @@ with open(f"output/scripts/script_{i:02d}.txt", "w") as f:
     f.write(keyword)
 EOF
 
-            # 🔹 Generate full short script
+            # Generate short script
             python - <<EOF
 import random, os
 i = $i
@@ -63,7 +62,7 @@ script = f"{random.choice(hooks)}\n{random.choice(bodies)}\n{random.choice(close
 with open(f"output/scripts/processed_script_{i:02d}.txt","w") as f: f.write(script)
 EOF
 
-            # 🔹 Generate voiceover
+            # Generate voiceover
             python - <<EOF
 from gtts import gTTS
 import os
@@ -74,7 +73,7 @@ tts = gTTS(text=text, lang='en')
 tts.save(f"output/audio/audio_{i:02d}.mp3")
 EOF
 
-            # 🔹 Generate background image
+            # Generate background image
             python - <<EOF
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -90,7 +89,7 @@ draw.text(((1080-w)/2,(1920-h)/2),text,font=font,fill=(255,255,255))
 img.save(f"output/images/image_{i:02d}.png")
 EOF
 
-            # 🔹 Combine image + audio into video
+            # Combine image + audio to video
             ffmpeg -loop 1 -i output/images/image_${i:02d}.png -i output/audio/audio_${i:02d}.mp3 \
             -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -y output/video/video_${i:02d}.mp4
           done
