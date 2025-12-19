@@ -1,7 +1,7 @@
 name: YouTube Shorts Automation
 
 on:
-  workflow_dispatch:   # Run workflow button
+  workflow_dispatch:   # Enables Run workflow button
   schedule:
     - cron: "0 0 * * *"  # Run once per day
 
@@ -10,29 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v3
 
-      # 2️⃣ Use official Python
+      # 2️⃣ Setup Python explicitly
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.12
 
-      # 3️⃣ Install dependencies in the same Python environment
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install moviepy imageio imageio-ffmpeg numpy pillow requests pytrends gTTS
-
-      # 4️⃣ Install system dependencies
+      # 3️⃣ Install system packages
       - name: Install system packages
         run: |
           sudo apt update
           sudo apt install ffmpeg git -y
 
-      # 5️⃣ Run automation scripts
-      - name: Run scripts
+      # 4️⃣ Install Python dependencies in the same environment
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install moviepy imageio imageio-ffmpeg numpy pillow requests pytrends gTTS
+
+      # 5️⃣ Run all automation scripts using the same Python
+      - name: Run automation
         run: |
           python trends.py
           python script.py
@@ -40,7 +40,7 @@ jobs:
           python video.py
           python metadata.py
 
-      # 6️⃣ Upload all videos in one ZIP
+      # 6️⃣ Upload all generated videos as one artifact
       - name: Upload videos
         uses: actions/upload-artifact@v4
         with:
