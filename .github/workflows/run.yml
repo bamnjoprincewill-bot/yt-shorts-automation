@@ -1,9 +1,9 @@
 name: YouTube Shorts Automation
 
 on:
-  workflow_dispatch:   # Manual Run workflow button
+  workflow_dispatch:   # Manual Run button
   schedule:
-    - cron: "0 0 * * *"  # Optional: daily run
+    - cron: "0 0 * * *"  # Optional daily run
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
       # 1️⃣ Checkout repository
       - uses: actions/checkout@v3
 
-      # 2️⃣ Setup Python 3.12
+      # 2️⃣ Setup Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
