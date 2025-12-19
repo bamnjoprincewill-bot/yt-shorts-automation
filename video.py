@@ -3,7 +3,7 @@ from moviepy.editor import *
 
 os.makedirs("output", exist_ok=True)
 
-for i in range(5):
+for i in range(30):
     audio = AudioFileClip(f"audio/voice_{i}.mp3")
 
     bg = ColorClip(
