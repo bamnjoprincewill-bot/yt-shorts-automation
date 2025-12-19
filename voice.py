@@ -1,11 +1,20 @@
-import os
+import argparse
 from gtts import gTTS
+import os
 
-os.makedirs("audio", exist_ok=True)
+# Parse video number from workflow
+parser = argparse.ArgumentParser()
+parser.add_argument("--video-number", type=int, required=True)
+args = parser.parse_args()
+video_number = args.video_number
 
-for i in range(30):
-    with open(f"scripts/script_{i}.txt") as f:
-        text = f.read()
+# Example: replace this with your actual script text for each video
+script_text = f"This is your script for video number {video_number}"
 
-    tts = gTTS(text)
-    tts.save(f"audio/voice_{i}.mp3")
+# Generate TTS audio
+tts = gTTS(text=script_text, lang='en')
+os.makedirs("output/audio", exist_ok=True)
+audio_path = f"output/audio/audio_{video_number:02d}.mp3"
+tts.save(audio_path)
+
+print(f"[✅] TTS audio generated: {audio_path}")
