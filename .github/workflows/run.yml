@@ -1,51 +1,35 @@
-name: Fully Automated Shorts System
+name: YouTube Shorts Automation
 
 on:
-  workflow_dispatch:  # Manual run button
+  workflow_dispatch:
   schedule:
-    schedule:
-  - cron: "0 */4 * * *"
-
+    - cron: "0 */4 * * *"   # every 4 hours (30 videos/day)
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repo
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # 2️⃣ Setup system: Python, FFmpeg, pip
       - name: Setup system
         run: |
           sudo apt update
-          sudo apt install ffmpeg wget git -y
+          sudo apt install ffmpeg -y
           python3 -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 3️⃣ Install Piper for voice
-      - name: Install Piper
+      - name: Run automation
         run: |
-          sudo apt update
-          sudo apt install wget tar -y
-          wget https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz -O piper.tar.gz
-          tar -xvf piper.tar.gz
-          sudo mv piper /usr/local/bin/
-
-      # 4️⃣ Install Whisper for captions
-      - name: Install Whisper
-        run: |
-          git clone https://github.com/ggerganov/whisper.cpp
-          cd whisper.cpp && make
-
-      # 5️⃣ Run full automation
-      - name: Run Full Automation
-        run: |
-          python3 bg_image.py
           python3 trends.py
           python3 script.py
           python3 voice.py
-          python3 captions.py
           python3 video.py
           python3 metadata.py
 
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        with:
+          name: shorts
+          path: output/
