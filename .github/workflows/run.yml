@@ -1,31 +1,31 @@
 name: YouTube Shorts Full Automation
 
-# Manual run only
 on:
-  workflow_dispatch:   # This ensures the Run workflow button always appears
+  workflow_dispatch:   # ✅ Manual run only, guarantees Run button
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - uses: actions/checkout@v3
+      # 1️⃣ Checkout repository
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       # 2️⃣ Setup Python
-      - name: Setup Python
+      - name: Setup Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: 3.12
 
-      # 3️⃣ Install system packages
+      # 3️⃣ Install system dependencies
       - name: Install system packages
         run: |
           sudo apt update
-          sudo apt install ffmpeg git python3-pip -y
+          sudo apt install ffmpeg python3-pip -y
 
-      # 4️⃣ Install Python dependencies
-      - name: Install Python packages
+      # 4️⃣ Install Python packages
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy pillow requests pytrends gTTS
@@ -37,7 +37,7 @@ jobs:
           for i in {1..90}; do
             echo "=== Generating video $i ==="
 
-            # Generate trending topic
+            # Trending topic
             python - <<EOF
 from pytrends.request import TrendReq
 import os
@@ -50,19 +50,19 @@ with open(f"output/scripts/script_{i:02d}.txt", "w") as f:
     f.write(keyword)
 EOF
 
-            # Generate short script
+            # Script (hook, body, close)
             python - <<EOF
 import random, os
 i = $i
 with open(f"output/scripts/script_{i:02d}.txt","r") as f: topic=f.read().strip()
-hooks = [f"Did you know about {topic}?", f"This {topic} will blow your mind!", f"Stop scrolling! You need to see this {topic}.", f"Quick tip about {topic} you can't miss!"]
-bodies = [f"{topic} can save you so much time.", f"Here’s a quick hack using {topic}.", f"Use {topic} to level up your workflow.", f"This simple {topic} trick boosts productivity."]
-closes = ["Try it now!", "Don't forget to share!", "Hit follow for more!", "Implement this today!"]
+hooks = [f"Did you know about {topic}?","This {topic} will blow your mind!","Stop scrolling! You need to see this {topic}.","Quick tip about {topic} you can't miss!"]
+bodies = [f"{topic} can save you so much time.","Here’s a quick hack using {topic}.","Use {topic} to level up your workflow.","This simple {topic} trick boosts productivity."]
+closes = ["Try it now!","Don't forget to share!","Hit follow for more!","Implement this today!"]
 script = f"{random.choice(hooks)}\n{random.choice(bodies)}\n{random.choice(closes)}"
 with open(f"output/scripts/processed_script_{i:02d}.txt","w") as f: f.write(script)
 EOF
 
-            # Generate voiceover
+            # Voiceover
             python - <<EOF
 from gtts import gTTS
 import os
@@ -73,7 +73,7 @@ tts = gTTS(text=text, lang='en')
 tts.save(f"output/audio/audio_{i:02d}.mp3")
 EOF
 
-            # Generate background image
+            # Background image
             python - <<EOF
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -94,8 +94,8 @@ EOF
             -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -y output/video/video_${i:02d}.mp4
           done
 
-      # 6️⃣ Upload all videos as one artifact
-      - name: Upload videos
+      # 6️⃣ Upload all videos
+      - name: Upload all videos
         uses: actions/upload-artifact@v4
         with:
           name: shorts
